@@ -10,7 +10,8 @@
 ## 2. 系統架構
 | 元件 | 角色 |
 |---|---|
-| Claude 排程「每日知識庫更新」 | 每天 07:31（台北）寫內容 → push；週日做完每日更新後接著做每週整理（第 8 節） |
+| Claude 排程「每日知識庫更新」 | 每天 07:31（台北）把任務送進專用工作階段「每日知識庫｜排程執行專用」→ 寫內容 → push main；週日接著做每週整理（第 8 節） |
+| 專用工作階段「每日知識庫｜排程執行專用」 | claude.ai/code 上已接上本 repo（Default 雲端環境）的工作階段，排程在這裡執行；**不可封存或刪除** |
 | GitHub Actions `.github/workflows/deploy.yml` | push 後 build Quartz 4 → 複製 `site-extra/` → 裁切字型 → 部署 Pages |
 | Google Apps Script（綁在 Laura 的試算表，原始碼不在 repo） | 每 10 分鐘讀 `/line/latest.json`，`date`＝今天且未推過 → multicast 給「好友名單」狀態「通過」者；處理加好友／退出事件與「今天／複習／說明」回覆 |
 | LINE 官方帳號（免費輕用量，200 則／月） | 推播。每人每次算 1 則 → 每日 1 次最多 6 人 |
@@ -35,13 +36,13 @@ quartz.config.ts / quartz.layout.ts / quartz/styles/custom.scss / quartz/compone
 ```
 
 ## 4. 每日任務（排程執行）
-1. `add_repo`(laura920069/daily-knowledge, push) → 依指示 clone → `register_repo_root`。
-2. 若 `content/daily/今天.md` 已存在 → 結束。
-3. 只讀：本檔、`content/path/index.md`、`ls content/concepts/*/`、最近 3 篇 `content/daily/*.md`（避免重複）。不要通讀其他內容。
+1. cd 進 daily-knowledge repo → `git fetch origin main` → `git checkout -B main origin/main` → `git push --dry-run origin main` 測權限；被拒就不寫內容，回報完整錯誤＋推播後結束。
+2. 若 `content/daily/今天.md` 已存在（以 origin/main 為準）→ 跳過 3–7（週日仍做第 8 節）。
+3. 只讀：本檔、`content/path/index.md`、`ls content/concepts/*/`、最近 7 天 `content/daily/*.md`（避免重複）。不要通讀其他內容。
 4. 研究（WebSearch／WebFetch，各領域分開，新聞以 24–72 小時內為主），遵守第 6 節。
 5. 依第 5、7 節寫文章、概念卡、總覽頁；勾選學習路徑；更新 `latest.json`。
 6. `python3 scripts/check_content.py` 通過後 commit（`每日更新 YYYY-MM-DD`，結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`）→ `git -c push.negotiate=true push origin main`；被拒就 fetch＋rebase 後重試一次。
-7. `SendUserMessage` 簡報：各領域則數、新概念卡、路徑進度、總覽頁網址；任何失敗附完整錯誤訊息。
+7. `SendUserMessage` 簡報：各領域則數、新概念卡、路徑進度、總覽頁網址；任何失敗附完整錯誤訊息並 `PushNotification`。
 
 ## 5. 內容配額
 | 領域 | 則數 | 內容 |
@@ -132,8 +133,12 @@ text 純文字（不用 Markdown）、800 字元內：
 | 新朋友當天補推 | Apps Script 執行 `resendToday`（會重推給所有人） |
 | 後台無法登入 | 用「使用存取權杖登入」；token 過期就到 GitHub 重新產生 |
 | 排程時間／暫停 | Claude 排程任務設定（單一任務「每日知識庫更新」每天 07:31，台北時間；週日含每週整理） |
+| 改排程提示 | 排程任務設定裡改提示文字；執行規範本身改本檔即可（提示要求以本檔為準） |
+| 手動補跑 | 排程任務頁按「立即執行」，或在專用工作階段直接請 Claude 跑今天的每日任務 |
+| 排程跑了但推不上去（403） | 專用工作階段沒有接上 repo：在 claude.ai/code 新開一個選了本 repo 的雲端工作階段，請 Claude 把排程改送進新工作階段 |
 
 ## 11. 已知限制
+- 用工具建立的排程任務無法直接綁 repository，所以排程改送進「已接上 repo 的專用工作階段」執行；該工作階段被封存或刪除，排程就會失效。
 - Apps Script 原始碼只在 Laura 的 Google 試算表；若需修改，請她貼出（遮住 token）或提供新版讓她覆蓋。
 - 首頁桌機版隱藏側欄（搜尋在內頁）；預設淺色主題。
 - 字型為建置時裁切，新字會在下次部署自動加入。
