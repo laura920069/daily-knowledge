@@ -97,10 +97,14 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   )
   const links: SimpleLinkData[] = []
   const tags: SimpleSlug[] = []
-  const validLinks = new Set(data.keys())
+  // 關係網只顯示知識點（概念卡）：排除每日總覽、文章、首頁、週回顧、資料夾索引等網站架構頁
+  const isConcept = (s: string) =>
+    s.startsWith("concepts/") && !s.endsWith("/") && !s.endsWith("/index")
+  const validLinks = new Set([...data.keys()].filter(isConcept))
 
   const tweens = new Map<string, TweenNode>()
   for (const [source, details] of data.entries()) {
+    if (!validLinks.has(source)) continue
     const outgoing = details.links ?? []
 
     for (const dest of outgoing) {
@@ -123,7 +127,18 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   }
 
   const neighbourhood = new Set<SimpleSlug>()
-  const wl: (SimpleSlug | "__SENTINEL")[] = [slug, "__SENTINEL"]
+  // 在概念卡上以自己為中心；在文章／總覽頁則以該頁（及其連到的文章）提到的概念卡為中心
+  const seedSet = new Set<SimpleSlug>()
+  if (validLinks.has(slug)) {
+    seedSet.add(slug)
+  } else {
+    for (const l of data.get(slug)?.links ?? []) {
+      if (validLinks.has(l)) seedSet.add(l)
+      else for (const l2 of data.get(l)?.links ?? []) if (validLinks.has(l2)) seedSet.add(l2)
+    }
+  }
+  const seeds = [...seedSet]
+  const wl: (SimpleSlug | "__SENTINEL")[] = [...seeds, "__SENTINEL"]
   if (depth >= 0) {
     while (depth >= 0 && wl.length > 0) {
       // compute neighbours

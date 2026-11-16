@@ -127,6 +127,7 @@ text 純文字（不用 Markdown）、800 字元內：
 |---|---|
 | 考科確定／改配額／改來源 | 改本檔第 1、5、6 節 |
 | 改外觀 | `quartz/styles/custom.scss`（配色在 `quartz.config.ts`）；頂部導覽 `quartz/components/SiteNav.tsx` |
+| 關係網（Graph） | 只顯示概念卡（`concepts/` 下），文章／總覽／首頁不進關係網；邏輯在 `quartz/components/scripts/graph.inline.ts` 的 `isConcept`。要讓文章出現在關係網，文章重點裡要連 `[[概念]]`，概念卡之間要互連 |
 | 改字型 | `quartz.config.ts` typography ＋ `custom.scss` 的 @font-face ＋ `deploy.yml` 下載網址 |
 | 網站沒更新 | 看 repo 的 Actions 是否失敗；字型裁切步驟失敗時檢查 `scripts/subset_fonts.py` |
 | LINE 沒推 | 試算表「推播紀錄」；`latest.json` 的 date 是否為今天；Apps Script 觸發器是否存在；`checkQuota` 看額度 |
