@@ -1,0 +1,139 @@
+# 每日知識庫：唯一工作手冊
+
+> 任何維護或自動執行都**只讀這份檔案**，不需要也不應該依賴過去的對話紀錄。修改系統後，同步更新本檔。
+
+## 1. 目的與讀者
+- 站長 Laura（laura920069）＋最多 5 位朋友，**主要用手機閱讀**。
+- 每天整理四個領域：AI、投資理財（台股／ETF，入門）、健身（增肌、減脂、瑜珈柔軟度）、人資（準備研究所，**程度從零開始**；考科未定，暫以管理學、人資管理、組織行為、勞動法為範圍）。
+- 網站：https://laura920069.github.io/daily-knowledge/ ｜ Repo：`laura920069/daily-knowledge`（Public，分支 `main`）
+
+## 2. 系統架構
+| 元件 | 角色 |
+|---|---|
+| Claude 排程「每日知識庫更新」 | 每天 07:31（台北）寫內容 → push |
+| Claude 排程「每週知識整理」 | 每週日 20:53 整理、寫回顧 → push |
+| GitHub Actions `.github/workflows/deploy.yml` | push 後 build Quartz 4 → 複製 `site-extra/` → 裁切字型 → 部署 Pages |
+| Google Apps Script（綁在 Laura 的試算表，原始碼不在 repo） | 每 10 分鐘讀 `/line/latest.json`，`date`＝今天且未推過 → multicast 給「好友名單」狀態「通過」者；處理加好友／退出事件與「今天／複習／說明」回覆 |
+| LINE 官方帳號（免費輕用量，200 則／月） | 推播。每人每次算 1 則 → 每日 1 次最多 6 人 |
+| Sveltia CMS `site-extra/admin/` | 網站後台 `/admin/`，用 GitHub fine-grained token 登入（只限此 repo、Contents 讀寫） |
+
+## 3. 檔案地圖
+```
+CLAUDE.md                     本手冊（唯一規範）
+content/                      所有內容（Obsidian 格式，[[雙向連結]]）
+  index.md                    首頁（HTML 版面，勿由自動化修改）
+  daily/YYYY-MM-DD.md         每日總覽（LINE 連結目標）
+  ai/ invest/ fitness/ hr/    文章：YYYY-MM-DD-英文短代稱.md
+  concepts/{hr,invest,fitness,ai}/概念名.md   概念卡
+  path/index.md               學習路徑（勾選清單，依序推進）
+  weekly/YYYY-Www.md          每週回顧
+  notes/                      Laura 的筆記：自動化永遠不可修改或刪除
+site-extra/line/latest.json   LINE 推播訊息
+site-extra/admin/             後台（index.html、config.yml）
+scripts/check_content.py      內容檢查（push 前必跑）
+scripts/subset_fonts.py       源泉圓體裁切（Actions 使用）
+quartz.config.ts / quartz.layout.ts / quartz/styles/custom.scss / quartz/components/SiteNav.tsx   外觀
+```
+
+## 4. 每日任務（排程執行）
+1. `add_repo`(laura920069/daily-knowledge, push) → 依指示 clone → `register_repo_root`。
+2. 若 `content/daily/今天.md` 已存在 → 結束。
+3. 只讀：本檔、`content/path/index.md`、`ls content/concepts/*/`、最近 3 篇 `content/daily/*.md`（避免重複）。不要通讀其他內容。
+4. 研究（WebSearch／WebFetch，各領域分開，新聞以 24–72 小時內為主），遵守第 6 節。
+5. 依第 5、7 節寫文章、概念卡、總覽頁；勾選學習路徑；更新 `latest.json`。
+6. `python3 scripts/check_content.py` 通過後 commit（`每日更新 YYYY-MM-DD`，結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`）→ `git -c push.negotiate=true push origin main`；被拒就 fetch＋rebase 後重試一次。
+7. `SendUserMessage` 簡報：各領域則數、新概念卡、路徑進度、總覽頁網址；任何失敗附完整錯誤訊息。
+
+## 5. 內容配額
+| 領域 | 則數 | 內容 |
+|---|---|---|
+| AI | 1–3 | 模型／產品、產業、政策 |
+| 投資 | 2 | 台股／ETF 市場事實 1 ＋ 路徑「投資入門」下一項 1 |
+| 健身 | 1–2 | 增肌／減脂／柔軟度輪替；路徑「健身入門」下一項 |
+| 人資 | 2 | 路徑人資清單下一項（基礎概念）1 ＋ 時事（台灣法規政策或國際趨勢）1 |
+
+- 路徑項目完成：建概念卡，並把清單項改成 `- [x] [[概念名]]`。
+- 每天新增概念卡 2–5 張，寧缺勿濫。
+
+## 6. 來源規則
+- 每則至少一個一手來源（政府／官方、公司公告、原始研究、國際組織）；重大消息兩個獨立來源交叉確認。
+- 禁止：內容農場、匿名社群、轉傳圖卡、未證實爆料、業配、薦股／帶單、無出處網站。
+- 只放實際讀過的網址，絕不編造。標示可信度：官方／學術／國際組織／主流媒體／專業作者。
+- 優先：AI＝各公司官方部落格、arXiv、Reuters、AP、MIT Tech Review；投資＝央行、主計總處、金管會、證交所、櫃買、投信公告、Fed、Reuters、Bloomberg、中央社；健身＝PubMed、ACSM、NSCA、WHO、Harvard Health、Mayo Clinic、Stronger By Science；人資＝勞動部、全國法規資料庫、勞保局、ILO、OECD、SHRM、CIPD、HBR。
+- 自己的話改寫；引用一句以內且少於 15 字。
+
+## 7. 寫作規則與範本
+- 繁體中文（台灣用語）、短句、手機好讀；文章重點 50–100 字。
+- `[[ ]]` 只連到**存在的**概念卡；新卡的「相關概念」要連回既有卡。
+- 投資不給買賣建議；健身涉及飲食／疾病提醒諮詢專業。
+
+文章（`ai|invest|fitness|hr/YYYY-MM-DD-slug.md`）：
+```markdown
+---
+title: 標題（20 字內）
+date: YYYY-MM-DD
+tags: [領域, 子主題]
+領域: AI | 投資理財 | 健身 | 人資
+類型: 新聞 | 觀念 | 基礎概念
+author: claude
+---
+重點 50–100 字（含 [[概念]]）
+
+> [!info] 來源
+> - [標題](https://…)｜官方
+
+> [!tip] 📝 考點　（僅人資）
+> 可能考法與相關理論
+
+相關概念：[[A]]、[[B]]
+```
+
+概念卡（`concepts/領域/概念名.md`）：frontmatter 同上但 `類型: 概念卡`、加 `aliases: [英文, 縮寫]`；段落依序：`## 一句話定義`、`## 重點`、`## 常見考法`（人資）或 `## 實際應用`、`## 相關概念`、`## 延伸閱讀`。
+
+每日總覽（`daily/YYYY-MM-DD.md`）：`title: 📅 YYYY/MM/DD 每日知識`、`tags: [每日推播]`、`author: claude`；分 `## 🤖 AI`、`## 💰 投資理財`、`## 🏋️ 健身`、`## 📚 人資`，每則 `- [[檔名|標題]]：一句摘要`；最後 `## 🔁 今日複習卡`：挑 2／7／30 天前建立的概念卡一張（沒有就挑最舊的），附一個自我測驗問題。
+
+`site-extra/line/latest.json`：
+```json
+{"date":"YYYY-MM-DD","url":"https://laura920069.github.io/daily-knowledge/daily/YYYY-MM-DD","text":"…"}
+```
+text 純文字（不用 Markdown）、800 字元內：
+```
+📅 每日知識 MM/DD
+
+🤖 AI｜標題、標題
+💰 投資｜標題
+🏋️ 健身｜標題
+📚 人資｜標題
+🔁 複習｜概念名
+
+👉 完整內容
+（url）
+```
+
+## 8. 每週任務（週日排程）
+- 同第 4 節第 1 步取得 repo；只看過去 7 天新增的檔案。
+- 合併重複、修正過時（註明「（YYYY-MM-DD 更新）」）、補連結、接回孤立概念卡；刪除低價值自動文章（每週 ≤10 個，不確定就保留；概念卡只合併不刪）。
+- 寫 `weekly/YYYY-Www.md`（`title: 🗓️ YYYY 第 N 週回顧`、`tags: [每週回顧]`、`author: claude`）：本週重點、新概念卡、路徑進度（完成／總數）、3 題人資自測（`> [!question]- 題目` 摺疊答案）、整理紀錄。
+- **不可動** `latest.json`。check → commit（`每週整理 YYYY-Www`）→ push → SendUserMessage 摘要。
+
+## 9. 禁止事項（所有自動化）
+- 不可修改／刪除 `content/notes/` 或 `author` 不是 `claude` 的檔案、`content/index.md`。
+- 每日／每週任務不可改：`quartz/`、`.github/`、`site-extra/admin/`、`quartz.*.ts`、`scripts/`、本檔。
+- 不寄 Email；不處理任何 token／密碼（Laura 自行貼上）。
+
+## 10. 維護速查
+| 需求 | 做法 |
+|---|---|
+| 考科確定／改配額／改來源 | 改本檔第 1、5、6 節 |
+| 改外觀 | `quartz/styles/custom.scss`（配色在 `quartz.config.ts`）；頂部導覽 `quartz/components/SiteNav.tsx` |
+| 改字型 | `quartz.config.ts` typography ＋ `custom.scss` 的 @font-face ＋ `deploy.yml` 下載網址 |
+| 網站沒更新 | 看 repo 的 Actions 是否失敗；字型裁切步驟失敗時檢查 `scripts/subset_fonts.py` |
+| LINE 沒推 | 試算表「推播紀錄」；`latest.json` 的 date 是否為今天；Apps Script 觸發器是否存在；`checkQuota` 看額度 |
+| 新朋友當天補推 | Apps Script 執行 `resendToday`（會重推給所有人） |
+| 後台無法登入 | 用「使用存取權杖登入」；token 過期就到 GitHub 重新產生 |
+| 排程時間／暫停 | Claude 排程任務設定（每日 07:31、每週日 20:53，台北時間） |
+
+## 11. 已知限制
+- Apps Script 原始碼只在 Laura 的 Google 試算表；若需修改，請她貼出（遮住 token）或提供新版讓她覆蓋。
+- 首頁桌機版隱藏側欄（搜尋在內頁）；預設淺色主題。
+- 字型為建置時裁切，新字會在下次部署自動加入。
