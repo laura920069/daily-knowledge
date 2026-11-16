@@ -39,10 +39,10 @@ quartz.config.ts / quartz.layout.ts / quartz/styles/custom.scss / quartz/compone
 1. cd 進 daily-knowledge repo → `git fetch origin main` → `git checkout -B main origin/main` → `git push --dry-run origin main` 測權限；被拒就不寫內容，回報完整錯誤＋推播後結束。
 2. 若 `content/daily/今天.md` 已存在（以 origin/main 為準）→ 跳過 3–7（週日仍做第 8 節）。
 3. 只讀：本檔、`content/path/index.md`、`ls content/concepts/*/`、最近 7 天 `content/daily/*.md`（避免重複）。不要通讀其他內容。
-4. 研究（WebSearch／WebFetch，各領域分開，新聞以 24–72 小時內為主），遵守第 6 節。
+4. 研究（WebSearch 找網址，各領域分開，新聞以 24–72 小時內為主），遵守第 6 節。讀原文：WebFetch 失敗（ENOTFOUND）就改用 Bash `curl -sSL -A Mozilla/5.0 網址`；PubMed 用 `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=PMID&rettype=abstract&retmode=text`，文章仍附 PubMed 網址。Reuters、AP、OpenAI、The Verge 擋自動讀取，改用其他來源。
 5. 依第 5、7 節寫文章、概念卡、總覽頁；勾選學習路徑；更新 `latest.json`。
 6. `python3 scripts/check_content.py` 通過後 commit（`每日更新 YYYY-MM-DD`，結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`）→ `git -c push.negotiate=true push origin main`；被拒就 fetch＋rebase 後重試一次。
-7. `SendUserMessage` 簡報：各領域則數、新概念卡、路徑進度、總覽頁網址；任何失敗附完整錯誤訊息並 `PushNotification`。
+7. 最後回覆簡報：各領域則數、新概念卡、路徑進度、總覽頁網址；任何失敗附完整錯誤訊息並 `PushNotification`。
 
 ## 5. 內容配額
 | 領域 | 則數 | 內容 |
@@ -115,7 +115,7 @@ text 純文字（不用 Markdown）、800 字元內：
 - 先 `git fetch origin main`、確認工作目錄乾淨；`weekly/本週週次.md` 已存在就跳過。只看過去 7 天新增或修改的檔案。
 - 合併重複、修正過時（註明「（YYYY-MM-DD 更新）」）、補連結、接回孤立概念卡；刪除低價值自動文章（每週 ≤10 個，不確定就保留；概念卡只合併不刪）。
 - 寫 `weekly/YYYY-Www.md`（`title: 🗓️ YYYY 第 N 週回顧`、`tags: [每週回顧]`、`author: claude`）：本週重點、新概念卡、路徑進度（完成／總數）、3 題人資自測（`> [!question]- 題目` 摺疊答案）、整理紀錄。
-- **不可動** `latest.json`。check → 另外 commit（`每週整理 YYYY-Www`）→ push → SendUserMessage 另傳每週摘要；失敗附完整錯誤。
+- **不可動** `latest.json`。check → 另外 commit（`每週整理 YYYY-Www`）→ push → 回覆每週摘要；失敗附完整錯誤。
 
 ## 9. 禁止事項（所有自動化）
 - 不可修改／刪除 `content/notes/` 或 `author` 不是 `claude` 的檔案、`content/index.md`。
@@ -133,11 +133,21 @@ text 純文字（不用 Markdown）、800 字元內：
 | 新朋友當天補推 | Apps Script 執行 `resendToday`（會重推給所有人） |
 | 後台無法登入 | 用「使用存取權杖登入」；token 過期就到 GitHub 重新產生 |
 | 排程時間／暫停 | Claude 排程任務設定（單一任務「每日知識庫更新」每天 07:31，台北時間；週日含每週整理） |
-| 改排程提示 | 排程任務設定裡改提示文字；執行規範本身改本檔即可（提示要求以本檔為準） |
-| 手動補跑 | 排程任務頁按「立即執行」，或在專用工作階段直接請 Claude 跑今天的每日任務 |
+| 改排程提示 | 通常不必：提示只叫 Claude 依本檔執行，改本檔即可 |
+| 手動補跑 | 排程任務頁按「立即執行」，或在專用工作階段輸入「跑今天的每日任務」 |
+| 研究時網站連不上（`CONNECT tunnel failed, response 403`） | 雲端環境網路被限制：工作階段標題列的環境選單 →「Default」→ Edit → Network access 設為「不限制」（目前設定） |
 | 排程跑了但推不上去（403） | 專用工作階段沒有接上 repo：在 claude.ai/code 新開一個選了本 repo 的雲端工作階段，請 Claude 把排程改送進新工作階段 |
 
-## 11. 已知限制
+## 11. 對話與操作（省 token）
+- **只保留**專用工作階段「每日知識庫｜排程執行專用」（排程送進這裡，不可封存）。其餘與本站有關的舊對話都可封存：claude.ai/code 左側清單 → 對話 → 封存。
+- 排程提示只有一句「依 CLAUDE.md 執行」，規範全在本檔；改規範＝改本檔，不必改排程。
+- 要調整時：在 claude.ai/code **新開**一個選了本 repo 的工作階段（不要用專用工作階段，避免它的對話越來越長），一句話下指令並指明節次，例如：
+  - 「改 CLAUDE.md 第 5 節：人資每天 3 則，改完 push」
+  - 「content/path/index.md 人資第四階段移到第二階段前面，push」
+  - 「11/16 那篇台股文章刪掉，同步改總覽頁，push」
+- 不要貼長說明、不要叫它「先讀整個 repo」；完成後把該工作階段封存。
+
+## 12. 已知限制
 - 用工具建立的排程任務無法直接綁 repository，所以排程改送進「已接上 repo 的專用工作階段」執行；該工作階段被封存或刪除，排程就會失效。
 - Apps Script 原始碼只在 Laura 的 Google 試算表；若需修改，請她貼出（遮住 token）或提供新版讓她覆蓋。
 - 首頁桌機版隱藏側欄（搜尋在內頁）；預設淺色主題。
