@@ -21,7 +21,7 @@ public = pathlib.Path(sys.argv[2])
 out_dir = public / "static" / "fonts"
 out_dir.mkdir(parents=True, exist_ok=True)
 
-BOLD_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6", "strong", "b", "th", "nav", "summary"}
+BOLD_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6", "strong", "b", "th", "nav", "summary", "a", "button", "label", "dt"}
 BOLD_CLASSES = ("site-brand", "topic-name", "callout-title", "page-title", "hero-tags", "pill")
 
 # 一定要收錄的字：ASCII、全形標點、常用符號
