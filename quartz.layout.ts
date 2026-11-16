@@ -35,14 +35,19 @@ const explorer = Component.Explorer({
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
-  header: [],
-  afterBody: [],
-  footer: Component.Footer({
-    links: {
-      "📅 今日推播": "https://laura920069.github.io/daily-knowledge/daily/",
-      "✏️ 管理後台": "https://laura920069.github.io/daily-knowledge/admin/",
-    },
-  }),
+  header: [Component.SiteNav()],
+  afterBody: [
+    Component.ConditionalRender({
+      component: Component.RecentNotes({
+        title: "最新知識",
+        limit: 10,
+        showTags: true,
+        filter: (f) => isArticle(f.slug),
+      }),
+      condition: (page) => page.fileData.slug === "index",
+    }),
+  ],
+  footer: Component.Footer({ links: {} }),
 }
 
 // 單篇文章頁
@@ -52,12 +57,17 @@ export const defaultContentPageLayout: PageLayout = {
       component: Component.Breadcrumbs(),
       condition: (page) => page.fileData.slug !== "index",
     }),
-    Component.ArticleTitle(),
-    Component.ContentMeta(),
+    Component.ConditionalRender({
+      component: Component.ArticleTitle(),
+      condition: (page) => page.fileData.slug !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.ContentMeta(),
+      condition: (page) => page.fileData.slug !== "index",
+    }),
     Component.TagList(),
   ],
   left: [
-    Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
     Component.Flex({
       components: [
@@ -69,15 +79,6 @@ export const defaultContentPageLayout: PageLayout = {
     explorer,
   ],
   right: [
-    Component.ConditionalRender({
-      component: Component.RecentNotes({
-        title: "🆕 最新知識",
-        limit: 12,
-        showTags: true,
-        filter: (f) => isArticle(f.slug),
-      }),
-      condition: (page) => page.fileData.slug === "index",
-    }),
     Component.Graph({
       localGraph: { depth: 2, showTags: false, repelForce: 0.6, linkDistance: 40 },
       globalGraph: { showTags: false, repelForce: 0.5, linkDistance: 40 },
@@ -91,7 +92,6 @@ export const defaultContentPageLayout: PageLayout = {
 export const defaultListPageLayout: PageLayout = {
   beforeBody: [Component.Breadcrumbs(), Component.ArticleTitle(), Component.ContentMeta()],
   left: [
-    Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
     Component.Flex({
       components: [

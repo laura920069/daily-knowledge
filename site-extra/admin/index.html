@@ -8,5 +8,23 @@
   </head>
   <body>
     <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+    <script>
+      // 這個網站沒有架設 GitHub OAuth 伺服器，「使用 GitHub 登入」無法使用，
+      // 所以把它隱藏，只留下「使用存取權杖登入」。
+      (function () {
+        var hideGithubLogin = function () {
+          document.querySelectorAll("button").forEach(function (btn) {
+            var t = (btn.textContent || "").trim();
+            var isTokenButton = /權杖|token|トークン/i.test(t);
+            var isGithubLogin = /GitHub/i.test(t) && /登入|sign in|log in/i.test(t);
+            if (!isTokenButton && isGithubLogin) btn.style.display = "none";
+          });
+        };
+        new MutationObserver(hideGithubLogin).observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+      })();
+    </script>
   </body>
 </html>
