@@ -77,7 +77,7 @@ article {
 }
 
 // 內部連結：細底線取代色塊（首頁按鈕類除外）
-a.internal:not(.pill):not(.topic-row):not(.hero-down):not(.site-brand) {
+a.internal:not(.pill):not(.topic-row):not(.hero-down):not(.site-brand):not(.graph-chip) {
   background-color: transparent !important;
   padding: 0 !important;
   border-bottom: 1px solid color-mix(in srgb, var(--secondary) 45%, transparent);
@@ -430,5 +430,21 @@ a.topic-row {
   .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+// ---------- 關係網：手機／平板改為整列寬，反向連結排到下面 ----------
+@media all and not #{$desktop} {
+  .page > #quartz-body .sidebar.right {
+    flex-wrap: wrap;
+
+    & > .graph {
+      flex: 1 1 100%;
+      max-height: none;
+    }
+
+    & > .graph > .graph-outer {
+      height: 300px;
+    }
   }
 }

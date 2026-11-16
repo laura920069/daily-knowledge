@@ -80,8 +80,16 @@ export const defaultContentPageLayout: PageLayout = {
   ],
   right: [
     Component.Graph({
-      localGraph: { depth: 2, showTags: false, repelForce: 0.6, linkDistance: 40 },
-      globalGraph: { showTags: false, repelForce: 0.5, linkDistance: 40 },
+      // 關係網只顯示概念卡；局部圖 1 層、最多 12 個節點，名稱常駐，領域配色
+      localGraph: {
+        depth: 1,
+        showTags: false,
+        repelForce: 0.8,
+        linkDistance: 55,
+        fontSize: 0.8,
+        focusOnHover: true,
+      },
+      globalGraph: { showTags: false, repelForce: 0.7, linkDistance: 55, fontSize: 0.75 },
     }),
     Component.DesktopOnly(Component.TableOfContents()),
     Component.Backlinks(),

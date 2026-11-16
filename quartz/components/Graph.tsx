@@ -68,6 +68,7 @@ export default ((opts?: Partial<GraphOptions>) => {
         <h3>{i18n(cfg.locale).components.graph.title}</h3>
         <div class="graph-outer">
           <div class="graph-container" data-cfg={JSON.stringify(localGraph)}></div>
+          <div class="graph-hint" aria-live="polite"></div>
           <button class="global-graph-icon" aria-label="Global Graph">
             <svg
               version="1.1"
@@ -95,8 +96,22 @@ export default ((opts?: Partial<GraphOptions>) => {
             </svg>
           </button>
         </div>
+        <div class="graph-related" aria-label="相關知識點"></div>
         <div class="global-graph-outer">
-          <div class="global-graph-container" data-cfg={JSON.stringify(globalGraph)}></div>
+          <div class="global-graph-panel">
+            <div class="global-graph-bar">
+              <div class="graph-domains" role="group" aria-label="領域篩選">
+                <button class="graph-domain-btn" data-domain="">全部</button>
+                <button class="graph-domain-btn" data-domain="ai">AI</button>
+                <button class="graph-domain-btn" data-domain="invest">投資</button>
+                <button class="graph-domain-btn" data-domain="fitness">健身</button>
+                <button class="graph-domain-btn" data-domain="hr">人資</button>
+              </div>
+              <button class="global-graph-close" aria-label="關閉">✕</button>
+            </div>
+            <div class="global-graph-container" data-cfg={JSON.stringify(globalGraph)}></div>
+            <div class="graph-hint" aria-live="polite"></div>
+          </div>
         </div>
       </div>
     )

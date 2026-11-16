@@ -63,14 +63,43 @@ function addToVisited(slug: SimpleSlug) {
   localStorage.setItem(localStorageKey, JSON.stringify([...visited]))
 }
 
+// ---- 每日知識庫：領域配色與工具 ----
+const DOMAINS = { ai: "AI", invest: "投資", fitness: "健身", hr: "人資" } as const
+type Domain = keyof typeof DOMAINS
+// [淺色主題, 深色主題]
+const DOMAIN_COLORS: Record<Domain, [string, string]> = {
+  ai: ["#4f7aa3", "#8fb4d6"],
+  invest: ["#b07a1e", "#e0b45e"],
+  fitness: ["#5e8a4a", "#9cc488"],
+  hr: ["#b45a4c", "#e39488"],
+}
+const MAX_LOCAL_NODES = 12
+const isConcept = (s: string) =>
+  s.startsWith("concepts/") && !s.endsWith("/") && !s.endsWith("/index")
+function domainOf(s: string): Domain | null {
+  const m = s.match(/^(?:concepts\/)?(ai|invest|fitness|hr)\//)
+  return m ? (m[1] as Domain) : null
+}
+function domainColor(s: string, fallback: string): string {
+  const d = domainOf(s)
+  if (!d) return fallback
+  const dark = document.documentElement.getAttribute("saved-theme") === "dark"
+  return DOMAIN_COLORS[d][dark ? 1 : 0]
+}
+
+type GraphOpts = {
+  domain?: Domain | null
+  relatedEl?: HTMLElement | null
+  hintEl?: HTMLElement | null
+}
+
 type TweenNode = {
   update: (time: number) => void
   stop: () => void
 }
 
-async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
+async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOpts = {}) {
   const slug = simplifySlug(fullSlug)
-  const visited = getVisited()
   removeAllChildren(graph)
 
   let {
@@ -82,7 +111,6 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     centerForce,
     linkDistance,
     fontSize,
-    opacityScale,
     removeTags,
     showTags,
     focusOnHover,
@@ -98,9 +126,9 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   const links: SimpleLinkData[] = []
   const tags: SimpleSlug[] = []
   // 關係網只顯示知識點（概念卡）：排除每日總覽、文章、首頁、週回顧、資料夾索引等網站架構頁
-  const isConcept = (s: string) =>
-    s.startsWith("concepts/") && !s.endsWith("/") && !s.endsWith("/index")
-  const validLinks = new Set([...data.keys()].filter(isConcept))
+  const validLinks = new Set(
+    [...data.keys()].filter((k) => isConcept(k) && (!opts.domain || domainOf(k) === opts.domain)),
+  )
 
   const tweens = new Map<string, TweenNode>()
   for (const [source, details] of data.entries()) {
@@ -158,6 +186,42 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     if (showTags) tags.forEach((tag) => neighbourhood.add(tag))
   }
 
+  // 連結數（用來決定節點大小與保留順序）
+  const degree = (id: string) => links.filter((l) => l.source === id || l.target === id).length
+  // 局部圖節點上限：保留中心，再依連結數多寡挑選，避免越長越密
+  if (depth >= 0 && neighbourhood.size > MAX_LOCAL_NODES) {
+    const keep = [
+      ...seeds,
+      ...[...neighbourhood].filter((n) => !seeds.includes(n)).sort((a, b) => degree(b) - degree(a)),
+    ].slice(0, MAX_LOCAL_NODES)
+    neighbourhood.clear()
+    keep.forEach((n) => neighbourhood.add(n))
+  }
+
+  // 圖下方的「相關知識點」清單
+  if (opts.relatedEl) {
+    const el = opts.relatedEl
+    removeAllChildren(el)
+    const related = [...neighbourhood]
+      .filter((n) => n !== slug)
+      .sort((a, b) => Number(seeds.includes(b)) - Number(seeds.includes(a)) || degree(b) - degree(a))
+    if (related.length === 0) {
+      const p = document.createElement("p")
+      p.className = "graph-related-empty"
+      p.textContent = "這頁還沒有連到知識點，點右上角圖示看全部"
+      el.appendChild(p)
+    } else {
+      for (const id of related) {
+        const a = document.createElement("a")
+        a.className = "graph-chip internal"
+        a.href = resolveRelative(fullSlug, id)
+        a.textContent = data.get(id)?.title ?? id
+        a.style.setProperty("--chip-color", domainColor(id, "var(--gray)"))
+        el.appendChild(a)
+      }
+    }
+  }
+
   const nodes = [...neighbourhood].map((url) => {
     const text = url.startsWith("tags/") ? "#" + url.substring(5) : (data.get(url)?.title ?? url)
     return {
@@ -184,7 +248,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     .force("charge", forceManyBody().strength(-100 * repelForce))
     .force("center", forceCenter().strength(centerForce))
     .force("link", forceLink(graphData.links).distance(linkDistance))
-    .force("collide", forceCollide<NodeData>((n) => nodeRadius(n)).iterations(3))
+    .force("collide", forceCollide<NodeData>((n) => nodeRadius(n) + 14).iterations(3))
 
   const radius = (Math.min(width, height) / 2) * 0.8
   if (enableRadial) simulation.force("radial", forceRadial(radius).strength(0.2))
@@ -209,25 +273,17 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   )
 
   // calculate color
-  const color = (d: NodeData) => {
-    const isCurrent = d.id === slug
-    if (isCurrent) {
-      return computedStyleMap["--secondary"]
-    } else if (visited.has(d.id) || d.id.startsWith("tags/")) {
-      return computedStyleMap["--tertiary"]
-    } else {
-      return computedStyleMap["--gray"]
-    }
-  }
+  const color = (d: NodeData) => domainColor(d.id, computedStyleMap["--gray"])
 
   function nodeRadius(d: NodeData) {
     const numLinks = graphData.links.filter(
       (l) => l.source.id === d.id || l.target.id === d.id,
     ).length
-    return 2 + Math.sqrt(numLinks)
+    return 4 + Math.sqrt(numLinks) + (d.id === slug ? 3 : 0)
   }
 
   let hoveredNodeId: string | null = null
+  let selectedId: string | null = null // 手機：第一下選取，第二下開啟
   let hoveredNeighbours: Set<string> = new Set()
   const linkRenderData: LinkRenderData[] = []
   const nodeRenderData: NodeRenderData[] = []
@@ -339,7 +395,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       let alpha = 1
 
       // if we are hovering over a node, we want to highlight the immediate neighbours
-      if (hoveredNodeId !== null && focusOnHover) {
+      if (hoveredNodeId !== null && (focusOnHover || selectedId !== null)) {
         alpha = n.active ? 1 : 0.2
       }
 
@@ -393,7 +449,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       interactive: false,
       eventMode: "none",
       text: n.text,
-      alpha: 0,
+      alpha: 1,
       anchor: { x: 0.5, y: 1.2 },
       style: {
         fontSize: fontSize * 15,
@@ -423,7 +479,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
         }
       })
       .on("pointerleave", () => {
-        updateHoverInfo(null)
+        updateHoverInfo(selectedId)
         label.alpha = oldLabelOpacity
         if (!dragging) {
           renderPixiFromD3()
@@ -432,6 +488,8 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
 
     if (isTagNode) {
       gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"] })
+    } else if (nodeId === slug) {
+      gfx.stroke({ width: 2.5, color: computedStyleMap["--dark"] })
     }
 
     nodesContainer.addChild(gfx)
@@ -465,11 +523,61 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   }
 
   let currentTransform = zoomIdentity
+
+  // 以座標找最近的節點（觸控目標放大到半徑 +12px）
+  function nodeAt(px: number, py: number): NodeData | undefined {
+    let best: NodeData | undefined
+    let bestDist = Infinity
+    for (const n of graphData.nodes) {
+      if (n.x === undefined || n.y === undefined) continue
+      const [sx, sy] = currentTransform.apply([n.x + width / 2, n.y + height / 2])
+      const dist = Math.hypot(sx - px, sy - py)
+      const hit = (nodeRadius(n) + 12) * currentTransform.k
+      if (dist <= Math.max(hit, 18) && dist < bestDist) {
+        best = n
+        bestDist = dist
+      }
+    }
+    return best
+  }
+
+  function setHint(text: string) {
+    if (!opts.hintEl) return
+    opts.hintEl.textContent = text
+    opts.hintEl.classList.toggle("show", text !== "")
+  }
+
+  function navigateTo(node: NodeData) {
+    const targ = resolveRelative(fullSlug, node.id)
+    window.spaNavigate(new URL(targ, window.location.toString()))
+  }
+
+  function selectNode(id: string | null) {
+    selectedId = id
+    updateHoverInfo(id)
+    renderPixiFromD3()
+    const node = graphData.nodes.find((n) => n.id === id)
+    setHint(node ? `再點一下「${node.text}」開啟` : "")
+  }
+
+  // 滑鼠：移上去預覽、點一下開啟；觸控：第一下選取並顯示關聯，第二下開啟
+  function handleTap(node: NodeData, isTouch: boolean) {
+    if (!isTouch || selectedId === node.id) {
+      navigateTo(node)
+    } else {
+      selectNode(node.id)
+    }
+  }
+
+  app.canvas.addEventListener("click", (e) => {
+    if (selectedId !== null && !nodeAt(e.offsetX, e.offsetY)) selectNode(null)
+  })
+
   if (enableDrag) {
     select<HTMLCanvasElement, NodeData | undefined>(app.canvas).call(
       drag<HTMLCanvasElement, NodeData | undefined>()
         .container(() => app.canvas)
-        .subject(() => graphData.nodes.find((n) => n.id === hoveredNodeId))
+        .subject((event) => nodeAt(event.x, event.y))
         .on("start", function dragstarted(event) {
           if (!event.active) simulation.alphaTarget(1).restart()
           event.subject.fx = event.subject.x
@@ -495,18 +603,20 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
           dragging = false
 
           // if the time between mousedown and mouseup is short, we consider it a click
-          if (Date.now() - dragStartTime < 500) {
-            const node = graphData.nodes.find((n) => n.id === event.subject.id) as NodeData
-            const targ = resolveRelative(fullSlug, node.id)
-            window.spaNavigate(new URL(targ, window.location.toString()))
+          const init = event.subject.__initialDragPos
+          const moved = init ? Math.hypot(event.x - init.x, event.y - init.y) : 0
+          if (Date.now() - dragStartTime < 500 && moved < 8) {
+            const se = event.sourceEvent
+            const isTouch =
+              (se?.type ?? "").startsWith("touch") || se?.pointerType === "touch"
+            handleTap(event.subject as NodeData, isTouch)
           }
         }),
     )
   } else {
     for (const node of nodeRenderData) {
-      node.gfx.on("click", () => {
-        const targ = resolveRelative(fullSlug, node.simulationData.id)
-        window.spaNavigate(new URL(targ, window.location.toString()))
+      node.gfx.on("pointertap", (e) => {
+        handleTap(node.simulationData, e.pointerType === "touch")
       })
     }
   }
@@ -524,16 +634,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
           stage.scale.set(transform.k, transform.k)
           stage.position.set(transform.x, transform.y)
 
-          // zoom adjusts opacity of labels too
-          const scale = transform.k * opacityScale
-          let scaleOpacity = Math.max((scale - 1) / 3.75, 0)
-          const activeNodes = nodeRenderData.filter((n) => n.active).flatMap((n) => n.label)
-
-          for (const label of labelsContainer.children) {
-            if (!activeNodes.includes(label)) {
-              label.alpha = scaleOpacity
-            }
-          }
+          // 名稱常駐顯示，不隨縮放淡出
         }),
     )
   }
@@ -596,7 +697,13 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
     cleanupLocalGraphs()
     const localGraphContainers = document.getElementsByClassName("graph-container")
     for (const container of localGraphContainers) {
-      localGraphCleanups.push(await renderGraph(container as HTMLElement, slug))
+      const root = container.closest(".graph")
+      localGraphCleanups.push(
+        await renderGraph(container as HTMLElement, slug, {
+          relatedEl: root?.querySelector(".graph-related") as HTMLElement | null,
+          hintEl: root?.querySelector(".graph-outer .graph-hint") as HTMLElement | null,
+        }),
+      )
     }
   }
 
@@ -611,8 +718,44 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
   })
 
   const containers = [...document.getElementsByClassName("global-graph-outer")] as HTMLElement[]
-  async function renderGlobalGraph() {
+  // 全部視圖：預設只顯示目前頁面所屬領域（首頁、總覽頁等顯示全部）
+  let globalDomain: Domain | null = null
+  function syncDomainButtons() {
+    for (const btn of document.querySelectorAll<HTMLButtonElement>(".graph-domain-btn")) {
+      btn.setAttribute("aria-pressed", String((btn.dataset.domain || null) === globalDomain))
+    }
+  }
+  async function drawGlobal() {
+    cleanupGlobalGraphs()
+    syncDomainButtons()
     const slug = getFullSlug(window)
+    for (const container of containers) {
+      const graphContainer = container.querySelector(".global-graph-container") as HTMLElement
+      if (graphContainer) {
+        globalGraphCleanups.push(
+          await renderGraph(graphContainer, slug, {
+            domain: globalDomain,
+            hintEl: container.querySelector(".graph-hint") as HTMLElement | null,
+          }),
+        )
+      }
+    }
+  }
+  function onDomainClick(this: HTMLButtonElement) {
+    globalDomain = (this.dataset.domain || null) as Domain | null
+    void drawGlobal()
+  }
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".graph-domain-btn")) {
+    btn.addEventListener("click", onDomainClick)
+    window.addCleanup(() => btn.removeEventListener("click", onDomainClick))
+  }
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".global-graph-close")) {
+    btn.addEventListener("click", hideGlobalGraph)
+    window.addCleanup(() => btn.removeEventListener("click", hideGlobalGraph))
+  }
+
+  async function renderGlobalGraph() {
+    globalDomain = domainOf(simplifySlug(getFullSlug(window)))
     for (const container of containers) {
       container.classList.add("active")
       const sidebar = container.closest(".sidebar") as HTMLElement
@@ -620,12 +763,9 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
         sidebar.style.zIndex = "1"
       }
 
-      const graphContainer = container.querySelector(".global-graph-container") as HTMLElement
       registerEscapeHandler(container, hideGlobalGraph)
-      if (graphContainer) {
-        globalGraphCleanups.push(await renderGraph(graphContainer, slug))
-      }
     }
+    await drawGlobal()
   }
 
   function hideGlobalGraph() {
