@@ -5,14 +5,14 @@ title: 每日知識庫
 每天早上自動整理 **AI、投資理財、健身、人資專業** 的重點知識，附上可信來源，並用 [[#怎麼用這個知識庫|雙向連結]] 把知識串成一張網。
 
 <div class="home-grid">
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/daily/">📅 每日推播<span>每天的知識清單</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/path/">🧭 學習路徑<span>人資從零開始</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/ai/">🤖 AI 新聞<span>模型、產業、政策</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/invest/">💰 投資理財<span>台股、ETF、總經</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/fitness/">🏋️ 健身<span>增肌、減脂、柔軟度</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/hr/">📚 人資專業<span>台灣＋國際、考點</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/concepts/">🧠 概念卡<span>可複習的知識點</span></a>
-<a class="home-card" href="https://laura920069.github.io/daily-knowledge/weekly/">🗓️ 每週回顧<span>本週學了什麼</span></a>
+<a class="home-card" href="./daily/">📅 每日推播<span>每天的知識清單</span></a>
+<a class="home-card" href="./path/">🧭 學習路徑<span>人資從零開始</span></a>
+<a class="home-card" href="./ai/">🤖 AI 新聞<span>模型、產業、政策</span></a>
+<a class="home-card" href="./invest/">💰 投資理財<span>台股、ETF、總經</span></a>
+<a class="home-card" href="./fitness/">🏋️ 健身<span>增肌、減脂、柔軟度</span></a>
+<a class="home-card" href="./hr/">📚 人資專業<span>台灣＋國際、考點</span></a>
+<a class="home-card" href="./concepts/">🧠 概念卡<span>可複習的知識點</span></a>
+<a class="home-card" href="./weekly/">🗓️ 每週回顧<span>本週學了什麼</span></a>
 </div>
 
 ## 怎麼用這個知識庫
