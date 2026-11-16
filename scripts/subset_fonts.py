@@ -63,9 +63,16 @@ class Collector(HTMLParser):
 
 
 c = Collector()
+tag_re = re.compile(r"<[^>]+>")
 for f in public.rglob("*.html"):
-    c.feed(f.read_text(encoding="utf-8", errors="ignore"))
+    text = f.read_text(encoding="utf-8", errors="ignore")
+    c.feed(text)
+    c.close()
+    c.reset()
     c.stack.clear()
+    c.skip = 0
+    # 保險：把去掉標籤後的所有文字也收進一般字重，確保不漏字
+    c.all.update(html.unescape(tag_re.sub(" ", text)))
 
 # 搜尋索引與 popover 用到的文字
 for f in public.rglob("*.json"):
