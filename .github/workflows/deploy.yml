@@ -32,6 +32,28 @@ jobs:
         run: npx quartz build
       - name: Add admin & LINE files
         run: cp -r site-extra/. public/
+      - name: Cache GenSen Rounded font
+        id: font-cache
+        uses: actions/cache@v4
+        with:
+          path: fonts-src
+          key: gensen-rounded-2-tw-r-b-v1
+      - name: Download GenSen Rounded font (SIL OFL 1.1)
+        if: steps.font-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p fonts-src
+          for w in R B; do
+            curl -fsSL -o fonts-src/GenSenRounded2TW-$w.otf \
+              https://raw.githubusercontent.com/ButTaiwan/gensen-font/master/otf/TW/GenSenRounded2TW-$w.otf
+          done
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Subset font to characters used on the site
+        run: |
+          pip install --quiet fonttools brotli
+          python scripts/subset_fonts.py fonts-src public
+          cp fonts-LICENSE-GenSen-OFL.txt public/static/fonts/OFL.txt
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

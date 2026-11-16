@@ -1,6 +1,23 @@
 @use "./base.scss";
 @use "./variables.scss" as *;
 
+// ---------- 字型：源泉圓體（SIL Open Font License 1.1） ----------
+@font-face {
+  font-family: "GenSen Rounded 2 TW";
+  src: url("./static/fonts/gensen-r.woff2") format("woff2");
+  font-weight: 100 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GenSen Rounded 2 TW";
+  src: url("./static/fonts/gensen-b.woff2") format("woff2");
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 // =====================================================================
 // 每日知識庫：編輯風（米白底、襯線大標、細線分隔、膠囊按鈕）— 手機優先
 // =====================================================================

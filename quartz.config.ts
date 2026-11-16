@@ -17,12 +17,13 @@ const config: QuartzConfig = {
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "created",
     theme: {
-      fontOrigin: "googleFonts",
+      fontOrigin: "local",
       cdnCaching: true,
       typography: {
-        header: "Noto Serif TC",
-        body: "Noto Sans TC",
-        code: "IBM Plex Mono",
+        // 源泉圓體 GenSen Rounded 2 TW（SIL OFL 1.1），建置時自動裁切成網站用到的字
+        header: "GenSen Rounded 2 TW",
+        body: "GenSen Rounded 2 TW",
+        code: "ui-monospace",
       },
       colors: {
         lightMode: {
