@@ -1,0 +1,188 @@
+# 每日知識庫 管理後台設定（Sveltia CMS）
+# 文件：https://github.com/sveltia/sveltia-cms
+
+backend:
+  name: github
+  repo: laura920069/daily-knowledge
+  branch: main
+  commit_messages:
+    create: "後台新增：{{slug}}"
+    update: "後台編輯：{{slug}}"
+    delete: "後台刪除：{{slug}}"
+    uploadMedia: "後台上傳：{{path}}"
+    deleteMedia: "後台刪除媒體：{{path}}"
+
+site_url: https://laura920069.github.io/daily-knowledge/
+display_url: https://laura920069.github.io/daily-knowledge/
+
+media_folder: content/attachments
+public_folder: /daily-knowledge/attachments
+
+slug:
+  encoding: unicode
+  clean_accents: false
+  sanitize_replacement: "-"
+
+collections:
+  - name: daily
+    label: "📅 每日推播"
+    folder: content/daily
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}"
+    filter: { field: date, pattern: ".+" }
+    sortable_fields: [date, title]
+    summary: "{{date}}｜{{title}}"
+    fields:
+      - &title { label: "標題", name: title, widget: string }
+      - &date
+        label: "日期"
+        name: date
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        default: "{{now}}"
+      - &tags { label: "標籤", name: tags, widget: list, required: false }
+      - &author { label: "作者", name: author, widget: hidden, default: "me" }
+      - &body { label: "內文", name: body, widget: markdown }
+
+  - name: ai
+    label: "🤖 AI 新聞"
+    folder: content/ai
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    filter: { field: date, pattern: ".+" }
+    sortable_fields: [date, title]
+    summary: "{{date}}｜{{title}}"
+    fields:
+      - *title
+      - *date
+      - *tags
+      - { label: "領域", name: 領域, widget: hidden, default: "AI" }
+      - &type
+        label: "類型"
+        name: 類型
+        widget: select
+        options: ["新聞", "觀念", "基礎概念", "筆記"]
+        required: false
+      - *author
+      - *body
+
+  - name: invest
+    label: "💰 投資理財"
+    folder: content/invest
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    filter: { field: date, pattern: ".+" }
+    sortable_fields: [date, title]
+    summary: "{{date}}｜{{title}}"
+    fields:
+      - *title
+      - *date
+      - *tags
+      - { label: "領域", name: 領域, widget: hidden, default: "投資理財" }
+      - *type
+      - *author
+      - *body
+
+  - name: fitness
+    label: "🏋️ 健身"
+    folder: content/fitness
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    filter: { field: date, pattern: ".+" }
+    sortable_fields: [date, title]
+    summary: "{{date}}｜{{title}}"
+    fields:
+      - *title
+      - *date
+      - *tags
+      - { label: "領域", name: 領域, widget: hidden, default: "健身" }
+      - *type
+      - *author
+      - *body
+
+  - name: hr
+    label: "📚 人資專業"
+    folder: content/hr
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    filter: { field: date, pattern: ".+" }
+    sortable_fields: [date, title]
+    summary: "{{date}}｜{{title}}"
+    fields:
+      - *title
+      - *date
+      - *tags
+      - { label: "領域", name: 領域, widget: hidden, default: "人資" }
+      - *type
+      - *author
+      - *body
+
+  - name: concepts-hr
+    label: "🧠 概念卡・人資"
+    folder: content/concepts/hr
+    create: true
+    slug: "{{title}}"
+    filter: { field: 類型, value: "概念卡" }
+    summary: "{{title}}"
+    fields: &conceptFields
+      - *title
+      - *date
+      - *tags
+      - { label: "別名（英文、縮寫）", name: aliases, widget: list, required: false }
+      - { label: "類型", name: 類型, widget: hidden, default: "概念卡" }
+      - *author
+      - *body
+
+  - name: concepts-invest
+    label: "🧠 概念卡・投資"
+    folder: content/concepts/invest
+    create: true
+    slug: "{{title}}"
+    filter: { field: 類型, value: "概念卡" }
+    summary: "{{title}}"
+    fields: *conceptFields
+
+  - name: concepts-fitness
+    label: "🧠 概念卡・健身"
+    folder: content/concepts/fitness
+    create: true
+    slug: "{{title}}"
+    filter: { field: 類型, value: "概念卡" }
+    summary: "{{title}}"
+    fields: *conceptFields
+
+  - name: concepts-ai
+    label: "🧠 概念卡・AI"
+    folder: content/concepts/ai
+    create: true
+    slug: "{{title}}"
+    filter: { field: 類型, value: "概念卡" }
+    summary: "{{title}}"
+    fields: *conceptFields
+
+  - name: notes
+    label: "✏️ 我的筆記"
+    folder: content/notes
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    filter: { field: date, pattern: ".+" }
+    sortable_fields: [date, title]
+    summary: "{{date}}｜{{title}}"
+    fields: [*title, *date, *tags, *author, *body]
+
+  - name: weekly
+    label: "🗓️ 每週回顧"
+    folder: content/weekly
+    create: true
+    slug: "{{title}}"
+    filter: { field: date, pattern: ".+" }
+    summary: "{{title}}"
+    fields: [*title, *date, *tags, *author, *body]
+
+  - name: pages
+    label: "⚙️ 固定頁面"
+    files:
+      - { label: "首頁", name: home, file: content/index.md, fields: [*title, *body] }
+      - { label: "學習路徑", name: path, file: content/path/index.md, fields: [*title, *body] }

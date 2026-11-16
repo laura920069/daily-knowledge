@@ -1,0 +1,30 @@
+---
+title: 每日知識庫
+---
+
+每天早上自動整理 **AI、投資理財、健身、人資專業** 的重點知識，附上可信來源，並用 [[#怎麼用這個知識庫|雙向連結]] 把知識串成一張網。
+
+<div class="home-grid">
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/daily/">📅 每日推播<span>每天的知識清單</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/path/">🧭 學習路徑<span>人資從零開始</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/ai/">🤖 AI 新聞<span>模型、產業、政策</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/invest/">💰 投資理財<span>台股、ETF、總經</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/fitness/">🏋️ 健身<span>增肌、減脂、柔軟度</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/hr/">📚 人資專業<span>台灣＋國際、考點</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/concepts/">🧠 概念卡<span>可複習的知識點</span></a>
+<a class="home-card" href="https://laura920069.github.io/daily-knowledge/weekly/">🗓️ 每週回顧<span>本週學了什麼</span></a>
+</div>
+
+## 怎麼用這個知識庫
+
+- **每日文章**：每則新聞或知識是一篇短文，內文中的 <u>底線連結</u> 會帶你到相關的「概念卡」。
+- **概念卡**：一個概念一張卡（例如 [[人力資源管理]]、[[ETF]]、[[漸進式超負荷]]），卡片下方的「反向連結」會列出所有提到它的文章。
+- **知識圖譜**：每頁右側（手機在頁面下方）的圖譜就是你的知識網路，點任何一個點都能跳過去；按圖譜右上角可展開整張網。
+- **搜尋**：左上角搜尋框可以全文搜尋，例如輸入「勞基法」。
+
+> [!tip] 複習小技巧
+> 看到一張概念卡時，先試著自己說出定義，再往下看內容；接著點反向連結，看它出現在哪些新聞裡——這就是用「連結」觸發記憶。
+
+## 資訊來源原則
+
+所有內容只採用可信、公開的來源：政府與官方機構、原始研究、主流媒體，以及立場中立的專業作者。每篇文章都會標示來源與可信度。投資相關內容僅整理事實與觀念，**不構成投資建議**。
