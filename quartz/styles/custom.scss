@@ -59,8 +59,8 @@ article {
   }
 }
 
-// 內部連結：細底線取代色塊
-a.internal {
+// 內部連結：細底線取代色塊（首頁按鈕類除外）
+a.internal:not(.pill):not(.topic-row):not(.hero-down):not(.site-brand) {
   background-color: transparent !important;
   padding: 0 !important;
   border-bottom: 1px solid color-mix(in srgb, var(--secondary) 45%, transparent);
