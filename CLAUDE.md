@@ -10,8 +10,7 @@
 ## 2. 系統架構
 | 元件 | 角色 |
 |---|---|
-| Claude 排程「每日知識庫更新」 | 每天 07:31（台北）寫內容 → push |
-| Claude 排程「每週知識整理」 | 每週日 20:53 整理、寫回顧 → push |
+| Claude 排程「每日知識庫更新」 | 每天 07:31（台北）寫內容 → push；週日做完每日更新後接著做每週整理（第 8 節） |
 | GitHub Actions `.github/workflows/deploy.yml` | push 後 build Quartz 4 → 複製 `site-extra/` → 裁切字型 → 部署 Pages |
 | Google Apps Script（綁在 Laura 的試算表，原始碼不在 repo） | 每 10 分鐘讀 `/line/latest.json`，`date`＝今天且未推過 → multicast 給「好友名單」狀態「通過」者；處理加好友／退出事件與「今天／複習／說明」回覆 |
 | LINE 官方帳號（免費輕用量，200 則／月） | 推播。每人每次算 1 則 → 每日 1 次最多 6 人 |
@@ -110,11 +109,12 @@ text 純文字（不用 Markdown）、800 字元內：
 （url）
 ```
 
-## 8. 每週任務（週日排程）
-- 同第 4 節第 1 步取得 repo；只看過去 7 天新增的檔案。
+## 8. 每週任務（週日，併入每日排程）
+- 由「每日知識庫更新」在週日完成第 4 節第 7 步後接著執行；即使當天每日更新失敗也要嘗試。
+- 先 `git fetch origin main`、確認工作目錄乾淨；`weekly/本週週次.md` 已存在就跳過。只看過去 7 天新增或修改的檔案。
 - 合併重複、修正過時（註明「（YYYY-MM-DD 更新）」）、補連結、接回孤立概念卡；刪除低價值自動文章（每週 ≤10 個，不確定就保留；概念卡只合併不刪）。
 - 寫 `weekly/YYYY-Www.md`（`title: 🗓️ YYYY 第 N 週回顧`、`tags: [每週回顧]`、`author: claude`）：本週重點、新概念卡、路徑進度（完成／總數）、3 題人資自測（`> [!question]- 題目` 摺疊答案）、整理紀錄。
-- **不可動** `latest.json`。check → commit（`每週整理 YYYY-Www`）→ push → SendUserMessage 摘要。
+- **不可動** `latest.json`。check → 另外 commit（`每週整理 YYYY-Www`）→ push → SendUserMessage 另傳每週摘要；失敗附完整錯誤。
 
 ## 9. 禁止事項（所有自動化）
 - 不可修改／刪除 `content/notes/` 或 `author` 不是 `claude` 的檔案、`content/index.md`。
@@ -131,7 +131,7 @@ text 純文字（不用 Markdown）、800 字元內：
 | LINE 沒推 | 試算表「推播紀錄」；`latest.json` 的 date 是否為今天；Apps Script 觸發器是否存在；`checkQuota` 看額度 |
 | 新朋友當天補推 | Apps Script 執行 `resendToday`（會重推給所有人） |
 | 後台無法登入 | 用「使用存取權杖登入」；token 過期就到 GitHub 重新產生 |
-| 排程時間／暫停 | Claude 排程任務設定（每日 07:31、每週日 20:53，台北時間） |
+| 排程時間／暫停 | Claude 排程任務設定（單一任務「每日知識庫更新」每天 07:31，台北時間；週日含每週整理） |
 
 ## 11. 已知限制
 - Apps Script 原始碼只在 Laura 的 Google 試算表；若需修改，請她貼出（遮住 token）或提供新版讓她覆蓋。
