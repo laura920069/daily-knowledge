@@ -2,7 +2,6 @@ import { Date, getDate } from "./Date"
 import { QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import readingTime from "reading-time"
 import { classNames } from "../util/lang"
-import { i18n } from "../i18n"
 import { JSX } from "preact"
 import style from "./styles/contentMeta.scss"
 
@@ -33,13 +32,16 @@ export default ((opts?: Partial<ContentMetaOptions>) => {
         segments.push(<Date date={getDate(cfg, fileData)!} locale={cfg.locale} />)
       }
 
-      // Display reading time if enabled
+      // 閱讀時間：中文以每分鐘約 400 字估算；有「快速導讀」的文章分開標示
       if (options.showReadingTime) {
-        const { minutes, words: _words } = readingTime(text)
-        const displayedTime = i18n(cfg.locale).components.contentMeta.readingTime({
-          minutes: Math.ceil(minutes),
-        })
-        segments.push(<span>{displayedTime}</span>)
+        const cjk = (text.match(/[\u3400-\u9fff\uf900-\ufaff]/g) ?? []).length
+        const latinWords = readingTime(text.replace(/[\u3400-\u9fff\uf900-\ufaff]/g, " ")).words
+        const minutes = Math.max(1, Math.ceil(cjk / 400 + latinWords / 220))
+        if (text.includes("快速導讀")) {
+          segments.push(<span>⚡ 快速導讀 1 分鐘｜📖 完整閱讀 {minutes} 分鐘</span>)
+        } else {
+          segments.push(<span>閱讀約 {minutes} 分鐘</span>)
+        }
       }
 
       return (

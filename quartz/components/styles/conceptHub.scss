@@ -1,0 +1,317 @@
+// 概念卡首頁：色塊卡片、查字典、翻卡複習（手機優先）
+
+// 概念卡首頁不顯示預設的文字清單，改用下方色塊
+body[data-slug="concepts/index"] .page-listing {
+  display: none;
+}
+
+.concept-hub {
+  // 領域色（與關係網相同）
+  .d-ai {
+    --dc: #4f7aa3;
+  }
+  .d-invest {
+    --dc: #b07a1e;
+  }
+  .d-fitness {
+    --dc: #5e8a4a;
+  }
+  .d-hr {
+    --dc: #b45a4c;
+  }
+
+  .hub-section {
+    margin: 2.2rem 0;
+
+    > h2 {
+      font-size: 1.25rem;
+      margin: 0 0 0.9rem;
+      padding-bottom: 0.4rem;
+      color: var(--gg-deep);
+      border-bottom: 1px solid color-mix(in srgb, var(--gg) 45%, transparent);
+    }
+  }
+
+  .hub-note {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin: 0.5rem 0 0;
+  }
+
+  // ---- 色塊卡片 ----
+  .hub-tiles {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .hub-grid,
+  .hub-results {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  // 常看的卡：手機上橫向滑動
+  .hub-row {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(150px, 46%);
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hub-tile {
+      scroll-snap-align: start;
+    }
+  }
+
+  a.hub-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-height: 120px;
+    padding: 0.85rem 0.9rem 0.9rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--dc, var(--gg)) 30%, transparent);
+    border-top: 5px solid var(--dc, var(--gg));
+    background: color-mix(in srgb, var(--dc, var(--gg)) 9%, var(--light)) !important;
+    color: var(--darkgray) !important;
+    text-decoration: none;
+    line-height: 1.5;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.25);
+    }
+
+    .hub-tile-domain {
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--dc, var(--gray));
+      font-weight: 600;
+    }
+
+    .hub-tile-title {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .hub-tile-def {
+      font-size: 0.8rem;
+      color: var(--darkgray);
+      opacity: 0.85;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  // ---- 查字典 ----
+  .hub-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.8rem;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--dark);
+    background: var(--light);
+    border: 1.5px solid var(--gg);
+    border-radius: 999px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--gg-deep);
+      box-shadow: 0 0 0 3px var(--gg-soft);
+    }
+  }
+
+  .hub-empty {
+    font-size: 0.9rem;
+    color: var(--gray);
+  }
+
+  // ---- 翻卡複習 ----
+  .flash-ranges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+
+    button {
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.3rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--gg) 60%, transparent);
+      background: transparent;
+      color: var(--darkgray);
+      cursor: pointer;
+
+      &[aria-pressed="true"] {
+        background: var(--gg-deep);
+        border-color: var(--gg-deep);
+        color: var(--light);
+      }
+    }
+  }
+
+  .flash-card {
+    perspective: 1200px;
+    cursor: pointer;
+    height: 230px;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .flash-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+  }
+
+  .flash-card.flipped .flash-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flash-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.2rem 1.4rem;
+    border-radius: 18px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    text-align: center;
+    border: 1px solid color-mix(in srgb, var(--dc, var(--gg)) 35%, transparent);
+    box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.35);
+  }
+
+  .flash-front {
+    border-top: 6px solid var(--dc, var(--gg));
+    background: color-mix(in srgb, var(--dc, var(--gg)) 10%, var(--light));
+  }
+
+  .flash-back {
+    transform: rotateY(180deg);
+    background: var(--light);
+    border-top: 6px solid var(--dc, var(--gg));
+  }
+
+  .flash-domain {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--dc, var(--gray));
+  }
+
+  .flash-term {
+    font-family: var(--headerFont);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.4;
+  }
+
+  .flash-tip {
+    font-size: 0.75rem;
+    color: var(--gray);
+  }
+
+  .flash-def {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--darkgray);
+    overflow-y: auto;
+  }
+
+  .flash-link {
+    font-size: 0.85rem;
+    color: var(--secondary) !important;
+    background: none !important;
+  }
+
+  .flash-actions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 1rem;
+
+    button {
+      flex: 1;
+      font: inherit;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.8rem;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .flash-again {
+      background: transparent;
+      color: var(--gg-deep);
+      border: 1.5px solid var(--gg);
+    }
+
+    .flash-known {
+      background: var(--gg-deep);
+      color: var(--light);
+      border: 1.5px solid var(--gg-deep);
+    }
+  }
+
+  .flash-progress {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--gray);
+    margin: 0.7rem 0 0;
+  }
+
+  // ---- 全部概念卡（依領域分組） ----
+  .hub-group {
+    margin: 1.4rem 0 1.8rem;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.05rem;
+      margin: 0 0 0.7rem;
+      padding-left: 0.6rem;
+      border-left: 4px solid var(--dc);
+      color: var(--gg-deep);
+    }
+
+    .hub-count {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--gray);
+    }
+  }
+}
+
+:root[saved-theme="dark"] .concept-hub {
+  .d-ai {
+    --dc: #8fb4d6;
+  }
+  .d-invest {
+    --dc: #e0b45e;
+  }
+  .d-fitness {
+    --dc: #9cc488;
+  }
+  .d-hr {
+    --dc: #e39488;
+  }
+}

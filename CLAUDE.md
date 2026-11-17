@@ -34,6 +34,8 @@ site-extra/admin/             後台（index.html、config.yml）
 scripts/check_content.py      內容檢查（push 前必跑）
 scripts/subset_fonts.py       源泉圓體裁切（Actions 使用）
 quartz.config.ts / quartz.layout.ts / quartz/styles/custom.scss / quartz/components/SiteNav.tsx   外觀
+quartz/plugins/transformers/autolink.ts   專有名詞自動連到概念卡（建置時）
+quartz/components/ConceptHub.tsx（＋scripts/conceptHub.inline.ts、styles/conceptHub.scss）   概念卡首頁：常看的卡、查字典、翻卡複習
 ```
 
 ## 4. 每日任務（排程執行）
@@ -55,7 +57,7 @@ quartz.config.ts / quartz.layout.ts / quartz/styles/custom.scss / quartz/compone
 | 人資 | 2 | 路徑人資清單下一項（基礎概念）1 ＋ 時事（台灣法規政策或國際趨勢）1 |
 
 - 路徑項目完成：建概念卡，並把清單項改成 `- [x] [[概念名]]`。
-- 每天新增概念卡 2–5 張，寧缺勿濫。
+- 每天新增概念卡 2–6 張，寧缺勿濫；進階閱讀裡的重要專有名詞若還沒有卡，當天建卡。
 
 ## 6. 來源規則
 - 每則至少一個一手來源（政府／官方、公司公告、原始研究、國際組織）；重大消息兩個獨立來源交叉確認。
@@ -65,7 +67,9 @@ quartz.config.ts / quartz.layout.ts / quartz/styles/custom.scss / quartz/compone
 - 自己的話改寫；引用一句以內且少於 15 字。
 
 ## 7. 寫作規則與範本
-- 繁體中文（台灣用語）、短句、手機好讀；文章重點 50–100 字。
+- 繁體中文（台灣用語）、短句、手機好讀。
+- 每篇文章分兩層：**⚡ 快速導讀**（50–100 字，放在 `> [!abstract] ⚡ 快速導讀` 框內）＋ **📖 進階閱讀**（約 400–700 字，全用 `###` 小標＋條列）。網站會依「快速導讀」字樣顯示「快速導讀 1 分鐘｜完整閱讀 N 分鐘」。
+- 專有名詞：網站建置時會把概念卡名稱與 aliases 自動連到概念卡（每篇第一次出現），寫作時不必每個都手動加 `[[ ]]`，但快速導讀至少手動連 1 個核心概念。
 - `[[ ]]` 只連到**存在的**概念卡；新卡的「相關概念」要連回既有卡。
 - 投資不給買賣建議；健身涉及飲食／疾病提醒諮詢專業。
 
@@ -79,7 +83,14 @@ tags: [領域, 子主題]
 類型: 新聞 | 觀念 | 基礎概念
 author: claude
 ---
-重點 50–100 字（含 [[概念]]）
+> [!abstract] ⚡ 快速導讀
+> 重點 50–100 字（含 [[概念]]）
+
+## 📖 進階閱讀
+
+### 小標（依下表）
+- 條列重點，數字附單位與日期
+  - 必要時第二層條列
 
 > [!info] 來源
 > - [標題](https://…)｜官方
@@ -90,7 +101,15 @@ author: claude
 相關概念：[[A]]、[[B]]
 ```
 
-概念卡（`concepts/領域/概念名.md`）：frontmatter 同上但 `類型: 概念卡`、加 `aliases: [英文, 縮寫]`；段落依序：`## 一句話定義`、`## 重點`、`## 常見考法`（人資）或 `## 實際應用`、`## 相關概念`、`## 延伸閱讀`。
+進階閱讀固定小標（依類型，可略過不適用的）：
+| 類型 | 小標 |
+|---|---|
+| 新聞（AI、投資、人資時事） | 發生什麼事／背景／為什麼重要／對我（或人資）有什麼影響／名詞小辭典 |
+| 觀念、基礎概念 | 定義／重點拆解／生活或職場例子／常見誤解（人資另有 📝 考點框） |
+| 健身 | 研究說了什麼／怎麼做（次數、份量）／注意事項／名詞小辭典 |
+- 投資文章結尾加 `> [!warning] 提醒` 不構成投資建議；週報格式見第 8-1 節。
+
+概念卡（`concepts/領域/概念名.md`）：frontmatter 同上但 `類型: 概念卡`、加 `aliases: [英文, 縮寫, 中文同義詞, 俗稱]`（至少 3 個；用於查字典與自動連結，避免太短或太常見的詞，例如單一字、「管理」）；`## 一句話定義` 只寫一句 60 字內（翻卡背面直接顯示這段）；段落依序：`## 一句話定義`、`## 重點`、`## 常見考法`（人資）或 `## 實際應用`、`## 相關概念`、`## 延伸閱讀`。
 
 每日總覽（`daily/YYYY-MM-DD.md`）：`title: 📅 YYYY/MM/DD 每日知識`、`tags: [每日推播]`、`author: claude`；分 `## 🤖 AI`、`## 💰 投資理財`、`## 🏋️ 健身`、`## 📚 人資`，每則 `- [[檔名|標題]]：一句摘要`；最後 `## 🔁 今日複習卡`：挑 2／7／30 天前建立的概念卡一張（沒有就挑最舊的），附一個自我測驗問題。
 
@@ -223,7 +242,13 @@ S&P 500 收在＿點，週漲跌＿%；主因是＿＿。
 |---|---|
 | 考科確定／改配額／改來源 | 改本檔第 1、5、6 節 |
 | 改外觀 | `quartz/styles/custom.scss`（配色在 `quartz.config.ts`）；頂部導覽 `quartz/components/SiteNav.tsx` |
-| 關係網（Graph） | 只顯示概念卡（`concepts/` 下），文章／總覽／首頁不進關係網。每頁 1 層、最多 12 個節點、名稱常駐、四領域配色；手機點一下選取、再點一下開啟（滑鼠點一下直接開）；圖下方有「相關知識點」按鈕；「全部」視圖可篩選領域。程式在 `quartz/components/scripts/graph.inline.ts`、`Graph.tsx`、`styles/graph.scss`，參數在 `quartz.layout.ts`。文章要進關係網，重點裡要連 `[[概念]]`；概念卡之間要互連 |
+| 關係網（Graph） | 只顯示概念卡（`concepts/` 下），文章／總覽／首頁不進關係網。每頁 1 層、最多 12 個節點、名稱常駐、四領域配色；點一下選取、再點一下跳出確認框（手機與滑鼠相同）；名稱有底色描邊、依名稱長度防重疊；圖下方有「相關知識點」按鈕；「全部」視圖可篩選領域。程式在 `quartz/components/scripts/graph.inline.ts`、`Graph.tsx`、`styles/graph.scss`，參數在 `quartz.layout.ts`。文章要進關係網，重點裡要連 `[[概念]]`；概念卡之間要互連 |
+| 配色 | 主色 Genentech Gray（Pantone 未公布色碼，暫用 `#8e8b85`；深色版 `#5f5c57`）定義在 `custom.scss` 的 `--gg`／`--gg-deep`；棕米色在 `quartz.config.ts`。關係網節點的領域色另在 `graph.inline.ts`、`conceptHub.scss` |
+| 關係網點擊 | 第一下選取（顯示名稱與關聯），第二下跳出「前往？開啟／取消」確認框，按「開啟」才跳轉；圖下方「相關知識點」按鈕直接開啟 |
+| 專有名詞自動連結 | `quartz/plugins/transformers/autolink.ts`：建置時讀所有概念卡的檔名＋aliases，每篇第一次出現的詞自動連到卡（略過標題、程式碼、既有連結）；要改連結字詞就改概念卡的 aliases |
+| 概念卡首頁 | `concepts/index`：🔥 常看的卡（依這支手機的瀏覽紀錄，存在 localStorage，不上傳）、🔍 查字典（比對卡名、aliases、一句話定義）、🃏 翻卡複習（正面名詞、背面一句話定義；進度存在本機）、📚 全部卡片色塊 |
+| 網站更新後手機看到舊版 | 每次建置會在 css／js 網址加版本號（`renderPage.tsx` 的 `BUILD_VERSION`），通常重新整理即可 |
+| 後台回網站 | `site-extra/admin/index.html` 左下角「← 回到網站」按鈕 |
 | 改字型 | `quartz.config.ts` typography ＋ `custom.scss` 的 @font-face ＋ `deploy.yml` 下載網址 |
 | 網站沒更新 | 看 repo 的 Actions 是否失敗；字型裁切步驟失敗時檢查 `scripts/subset_fonts.py` |
 | LINE 沒推 | 試算表「推播紀錄」；`latest.json` 的 date 是否為今天；Apps Script 觸發器是否存在；`checkQuota` 看額度 |

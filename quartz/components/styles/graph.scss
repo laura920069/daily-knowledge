@@ -47,7 +47,7 @@
     max-width: calc(100% - 1rem);
     padding: 0.25rem 0.7rem;
     border-radius: 999px;
-    background: var(--dark);
+    background: var(--gg-deep, var(--dark));
     color: var(--light);
     font-size: 0.75rem;
     white-space: nowrap;
@@ -59,6 +59,45 @@
 
     &.show {
       opacity: 0.9;
+    }
+
+    // 第二下：確認框（按「開啟」才跳轉）
+    &.confirm {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.4rem 0.35rem 0.9rem;
+      font-size: 0.85rem;
+      pointer-events: auto;
+      opacity: 1;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+
+      .graph-confirm-msg {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      button {
+        flex: none;
+        border: none;
+        border-radius: 999px;
+        padding: 0.3rem 0.85rem;
+        font: inherit;
+        font-size: 0.8rem;
+        cursor: pointer;
+      }
+
+      .graph-confirm-ok {
+        background: var(--light);
+        color: var(--dark);
+        font-weight: 600;
+      }
+
+      .graph-confirm-cancel {
+        background: transparent;
+        color: var(--light);
+        border: 1px solid color-mix(in srgb, var(--light) 50%, transparent);
+      }
     }
   }
 

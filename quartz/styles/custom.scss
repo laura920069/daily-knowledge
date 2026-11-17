@@ -25,6 +25,17 @@
 :root {
   --radius: 999px;
   --rule: 1px solid var(--lightgray);
+  // 主色：Pantone Genentech Gray（官方未公布色碼，暫用暖灰近似值，可在此調整）
+  --gg: #8e8b85;
+  // 主色的深色版：用在需要清楚閱讀的文字、按鈕
+  --gg-deep: #5f5c57;
+  --gg-soft: rgba(142, 139, 133, 0.1);
+}
+
+:root[saved-theme="dark"] {
+  --gg: #b4b0a9;
+  --gg-deep: #d6d2cb;
+  --gg-soft: rgba(180, 176, 169, 0.1);
 }
 
 body {
@@ -33,7 +44,7 @@ body {
   // 柔和的紙張質感
   background-image:
     radial-gradient(1200px 600px at 85% -10%, rgba(201, 151, 82, 0.07), transparent 60%),
-    radial-gradient(900px 500px at -10% 30%, rgba(95, 127, 153, 0.06), transparent 60%);
+    radial-gradient(900px 500px at -10% 30%, rgba(142, 139, 133, 0.07), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -54,9 +65,17 @@ h1.article-title {
   margin: 1.6rem 0 0.4rem;
 }
 
+// 主色用在大標題
+h1.article-title,
+article h2,
+article h3 {
+  color: var(--gg-deep);
+}
+
+// 內文：行距加大、段落與條列之間多留空間，減少擁擠感
 article {
-  line-height: 1.9;
-  letter-spacing: 0.01em;
+  line-height: 2.05;
+  letter-spacing: 0.015em;
 
   p,
   li {
@@ -64,15 +83,39 @@ article {
     font-weight: 400;
   }
 
+  p {
+    margin: 0.9rem 0;
+  }
+
+  ul,
+  ol {
+    margin: 0.6rem 0 1.1rem;
+    padding-left: 1.3rem;
+  }
+
+  li {
+    margin: 0.45rem 0;
+  }
+
+  li > ul,
+  li > ol {
+    margin: 0.3rem 0;
+  }
+
   h2 {
     font-size: 1.45rem;
-    margin-top: 2.4rem;
+    margin-top: 2.6rem;
     padding-bottom: 0.45rem;
-    border-bottom: var(--rule);
+    border-bottom: 1px solid color-mix(in srgb, var(--gg) 45%, transparent);
   }
 
   h3 {
     font-size: 1.15rem;
+    margin-top: 2rem;
+    margin-bottom: 0.4rem;
+    padding-left: 0.6rem;
+    border-left: 3px solid var(--gg);
+    line-height: 1.5;
   }
 }
 
@@ -82,16 +125,47 @@ a.internal:not(.pill):not(.topic-row):not(.hero-down):not(.site-brand):not(.grap
   padding: 0 !important;
   border-bottom: 1px solid color-mix(in srgb, var(--secondary) 45%, transparent);
   border-radius: 0 !important;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 
   &:hover {
     border-bottom-color: var(--secondary);
   }
 }
 
+// 提示框：統一成灰／棕兩種低彩度色系，用圖示區分類型
 .callout {
   border-radius: 14px;
   border: var(--rule);
+  line-height: 1.9;
+
+  &[data-callout] {
+    --color: var(--gg-deep);
+    --border: color-mix(in srgb, var(--gg) 40%, transparent);
+    --bg: var(--gg-soft);
+  }
+
+  &[data-callout="tip"],
+  &[data-callout="hint"],
+  &[data-callout="important"],
+  &[data-callout="warning"],
+  &[data-callout="caution"],
+  &[data-callout="attention"] {
+    --color: var(--secondary);
+    --border: color-mix(in srgb, var(--secondary) 35%, transparent);
+    --bg: color-mix(in srgb, var(--secondary) 6%, transparent);
+  }
+
+  // ⚡ 快速導讀
+  &[data-callout="abstract"],
+  &[data-callout="summary"],
+  &[data-callout="tldr"] {
+    --color: var(--gg-deep);
+    --border: var(--gg);
+    --bg: var(--gg-soft);
+    border-left: 4px solid var(--gg);
+  }
 }
 
 hr {
@@ -107,7 +181,7 @@ hr {
 .tags > li > a.tag-link,
 a.tag-link {
   background: transparent !important;
-  border: 1px solid var(--lightgray);
+  border: 1px solid color-mix(in srgb, var(--gg) 55%, transparent);
   border-radius: var(--radius) !important;
   padding: 0.1rem 0.65rem !important;
   font-size: 0.82rem;
@@ -264,13 +338,16 @@ body[data-slug="index"] {
 a.pill {
   display: inline-block;
   padding: 0.55rem 1.5rem;
-  border: 1px solid var(--dark);
+  border: 1px solid var(--gg-deep);
   border-radius: var(--radius);
   color: var(--light) !important;
-  background: var(--dark) !important;
+  background: var(--gg-deep) !important;
   font-size: 0.92rem;
   letter-spacing: 0.06em;
-  transition: opacity 0.2s, background 0.2s, color 0.2s;
+  transition:
+    opacity 0.2s,
+    background 0.2s,
+    color 0.2s;
 
   &:hover {
     opacity: 0.85;
@@ -278,10 +355,10 @@ a.pill {
 
   &.pill-ghost {
     background: transparent !important;
-    color: var(--dark) !important;
+    color: var(--gg-deep) !important;
 
     &:hover {
-      background: var(--dark) !important;
+      background: var(--gg-deep) !important;
       color: var(--light) !important;
     }
   }
@@ -296,7 +373,7 @@ a.pill {
 }
 
 .topic-list {
-  border-top: 1px solid var(--dark);
+  border-top: 2px solid var(--gg);
   margin-bottom: 2.5rem;
 }
 
@@ -309,7 +386,9 @@ a.topic-row {
   border-bottom: var(--rule);
   color: var(--dark) !important;
   background: none !important;
-  transition: padding 0.25s, color 0.2s;
+  transition:
+    padding 0.25s,
+    color 0.2s;
 
   .topic-no {
     font-family: var(--headerFont);

@@ -204,7 +204,9 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOp
     removeAllChildren(el)
     const related = [...neighbourhood]
       .filter((n) => n !== slug)
-      .sort((a, b) => Number(seeds.includes(b)) - Number(seeds.includes(a)) || degree(b) - degree(a))
+      .sort(
+        (a, b) => Number(seeds.includes(b)) - Number(seeds.includes(a)) || degree(b) - degree(a),
+      )
     if (related.length === 0) {
       const p = document.createElement("p")
       p.className = "graph-related-empty"
@@ -248,7 +250,13 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOp
     .force("charge", forceManyBody().strength(-100 * repelForce))
     .force("center", forceCenter().strength(centerForce))
     .force("link", forceLink(graphData.links).distance(linkDistance))
-    .force("collide", forceCollide<NodeData>((n) => nodeRadius(n) + 14).iterations(3))
+    .force(
+      "collide",
+      // 依名稱長度加大碰撞半徑，讓名稱彼此不重疊
+      forceCollide<NodeData>(
+        (n) => nodeRadius(n) + 12 + Math.min(n.text.length, 9) * 3.5,
+      ).iterations(4),
+    )
 
   const radius = (Math.min(width, height) / 2) * 0.8
   if (enableRadial) simulation.force("radial", forceRadial(radius).strength(0.2))
@@ -450,11 +458,13 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOp
       eventMode: "none",
       text: n.text,
       alpha: 1,
-      anchor: { x: 0.5, y: 1.2 },
+      anchor: { x: 0.5, y: 1.5 },
       style: {
         fontSize: fontSize * 15,
         fill: computedStyleMap["--dark"],
         fontFamily: computedStyleMap["--bodyFont"],
+        // 名稱加一圈背景色描邊，避免壓到線或其他節點時看不清
+        stroke: { color: computedStyleMap["--light"], width: 4, join: "round" },
       },
       resolution: window.devicePixelRatio * 4,
     })
@@ -541,8 +551,12 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOp
     return best
   }
 
+  // 提示／確認框：第一下選取（顯示名稱），第二下跳出確認框，按「開啟」才跳轉
+  let pendingNode: NodeData | null = null
   function setHint(text: string) {
+    pendingNode = null
     if (!opts.hintEl) return
+    opts.hintEl.classList.remove("confirm")
     opts.hintEl.textContent = text
     opts.hintEl.classList.toggle("show", text !== "")
   }
@@ -552,18 +566,46 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOp
     window.spaNavigate(new URL(targ, window.location.toString()))
   }
 
+  function askConfirm(node: NodeData) {
+    if (!opts.hintEl) return navigateTo(node)
+    const el = opts.hintEl
+    pendingNode = node
+    el.textContent = ""
+    const msg = document.createElement("span")
+    msg.className = "graph-confirm-msg"
+    msg.textContent = `前往「${node.text}」？`
+    const ok = document.createElement("button")
+    ok.className = "graph-confirm-ok"
+    ok.textContent = "開啟"
+    const cancel = document.createElement("button")
+    cancel.className = "graph-confirm-cancel"
+    cancel.textContent = "取消"
+    ok.addEventListener("click", (ev) => {
+      ev.stopPropagation()
+      const target = pendingNode
+      selectNode(null)
+      if (target) navigateTo(target)
+    })
+    cancel.addEventListener("click", (ev) => {
+      ev.stopPropagation()
+      selectNode(null)
+    })
+    el.append(msg, ok, cancel)
+    el.classList.add("show", "confirm")
+  }
+
   function selectNode(id: string | null) {
     selectedId = id
     updateHoverInfo(id)
     renderPixiFromD3()
     const node = graphData.nodes.find((n) => n.id === id)
-    setHint(node ? `再點一下「${node.text}」開啟` : "")
+    setHint(node ? `「${node.text}」・再點一下可開啟` : "")
   }
 
-  // 滑鼠：移上去預覽、點一下開啟；觸控：第一下選取並顯示關聯，第二下開啟
-  function handleTap(node: NodeData, isTouch: boolean) {
-    if (!isTouch || selectedId === node.id) {
-      navigateTo(node)
+  // 手機與電腦相同：第一下選取並顯示關聯，第二下跳出確認框，按「開啟」才跳轉（避免誤觸）
+  function handleTap(node: NodeData, _isTouch: boolean) {
+    if (selectedId === node.id) {
+      askConfirm(node)
     } else {
       selectNode(node.id)
     }
@@ -607,8 +649,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug, opts: GraphOp
           const moved = init ? Math.hypot(event.x - init.x, event.y - init.y) : 0
           if (Date.now() - dragStartTime < 500 && moved < 8) {
             const se = event.sourceEvent
-            const isTouch =
-              (se?.type ?? "").startsWith("touch") || se?.pointerType === "touch"
+            const isTouch = (se?.type ?? "").startsWith("touch") || se?.pointerType === "touch"
             handleTap(event.subject as NodeData, isTouch)
           }
         }),

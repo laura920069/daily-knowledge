@@ -47,14 +47,14 @@ SiteNav.css = `
   gap: 1.5rem;
   width: 100%;
   padding: 0.4rem 0 1.1rem;
-  border-bottom: 1px solid var(--dark);
+  border-bottom: 2px solid var(--gg);
 }
 
 .site-brand {
   font-family: var(--headerFont);
   font-size: 1.35rem;
   font-weight: 600;
-  color: var(--dark) !important;
+  color: var(--gg-deep) !important;
   background: none !important;
   white-space: nowrap;
   letter-spacing: 0.04em;
@@ -92,8 +92,9 @@ SiteNav.css = `
 
 .site-links a:hover,
 .site-links a.active {
-  color: var(--secondary) !important;
-  border-bottom-color: var(--secondary);
+  color: var(--gg-deep) !important;
+  font-weight: 600;
+  border-bottom-color: var(--gg);
 }
 
 @media all and (max-width: 800px) {

@@ -24,8 +24,10 @@ import Comments from "./Comments"
 import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
 import SiteNav from "./SiteNav"
+import ConceptHub from "./ConceptHub"
 
 export {
+  ConceptHub,
   ArticleTitle,
   Content,
   TagContent,

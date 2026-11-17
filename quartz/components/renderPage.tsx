@@ -23,23 +23,25 @@ interface RenderComponents {
 }
 
 const headerRegex = new RegExp(/h[1-6]/)
+// 每次建置的版本號：加在 css／js 網址後面，避免手機或 LINE 內建瀏覽器沿用舊檔
+const BUILD_VERSION = Date.now().toString(36)
 export function pageResources(
   baseDir: FullSlug | RelativeURL,
   staticResources: StaticResources,
 ): StaticResources {
-  const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
+  const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json") + `?v=${BUILD_VERSION}`
   const contentIndexScript = `const fetchData = fetch("${contentIndexPath}").then(data => data.json())`
 
   const resources: StaticResources = {
     css: [
       {
-        content: joinSegments(baseDir, "index.css"),
+        content: joinSegments(baseDir, "index.css") + `?v=${BUILD_VERSION}`,
       },
       ...staticResources.css,
     ],
     js: [
       {
-        src: joinSegments(baseDir, "prescript.js"),
+        src: joinSegments(baseDir, "prescript.js") + `?v=${BUILD_VERSION}`,
         loadTime: "beforeDOMReady",
         contentType: "external",
       },
@@ -55,7 +57,7 @@ export function pageResources(
   }
 
   resources.js.push({
-    src: joinSegments(baseDir, "postscript.js"),
+    src: joinSegments(baseDir, "postscript.js") + `?v=${BUILD_VERSION}`,
     loadTime: "afterDOMReady",
     moduleType: "module",
     contentType: "external",

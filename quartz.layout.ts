@@ -46,6 +46,11 @@ export const sharedPageComponents: SharedLayout = {
       }),
       condition: (page) => page.fileData.slug === "index",
     }),
+    // 概念卡首頁：常看的卡、查字典、翻卡複習、全部卡片色塊
+    Component.ConditionalRender({
+      component: Component.ConceptHub(),
+      condition: (page) => page.fileData.slug === "concepts/index",
+    }),
   ],
   footer: Component.Footer({ links: {} }),
 }

@@ -4,7 +4,7 @@ date: 2026-11-16
 tags: [投資, ETF, 概念卡]
 領域: 投資理財
 類型: 概念卡
-aliases: [市值型ETF, 高股息ETF, Market-cap ETF, Dividend ETF]
+aliases: [市值型ETF, 高股息ETF, Market-cap ETF, Dividend ETF, 市值型, 高股息]
 author: claude
 ---
 

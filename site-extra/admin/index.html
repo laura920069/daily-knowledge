@@ -5,8 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>管理後台｜每日知識庫</title>
+    <style>
+      /* 回到公開網站的按鈕（固定在左下角，登入前後都看得到） */
+      #back-to-site {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        z-index: 2147483647;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: #5f5c57;
+        color: #fff;
+        font: 600 14px/1.2 system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+        text-decoration: none;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      }
+      #back-to-site:hover {
+        background: #47443f;
+      }
+    </style>
   </head>
   <body>
+    <a id="back-to-site" href="../" title="回到大家看的網站">← 回到網站</a>
     <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
     <script>
       // 這個網站沒有架設 GitHub OAuth 伺服器，「使用 GitHub 登入」無法使用，

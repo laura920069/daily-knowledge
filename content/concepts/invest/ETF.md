@@ -4,7 +4,7 @@ date: 2026-11-16
 tags: [投資, ETF, 概念卡]
 領域: 投資理財
 類型: 概念卡
-aliases: [指數股票型基金, Exchange Traded Fund]
+aliases: [指數股票型基金, Exchange Traded Fund, 指數型基金, 交易所交易基金]
 author: claude
 ---
 
