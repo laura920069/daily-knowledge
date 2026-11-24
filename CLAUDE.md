@@ -65,6 +65,7 @@ quartz/components/ConceptHub.tsx（＋scripts/conceptHub.inline.ts、styles/conc
 - 只放實際讀過的網址，絕不編造。標示可信度：官方／學術／國際組織／主流媒體／專業作者。
 - 優先：AI＝各公司官方部落格、arXiv、Reuters、AP、MIT Tech Review；投資＝央行、主計總處、金管會、證交所、櫃買、投信公告、Fed、Reuters、Bloomberg、中央社（美股另見第 8-1 節來源表）；健身＝PubMed、ACSM、NSCA、WHO、Harvard Health、Mayo Clinic、Stronger By Science；人資＝勞動部、全國法規資料庫、勞保局、ILO、OECD、SHRM、CIPD、HBR。
 - 自己的話改寫；引用一句以內且少於 15 字。
+- OpenStax 教科書照常可引用（改寫＋附出處）；頁面上的 AI 使用聲明 Laura 已確認（2026-11-23），不必再回報。
 
 ## 7. 寫作規則與範本
 - 繁體中文（台灣用語）、短句、手機好讀。
@@ -270,7 +271,40 @@ S&P 500 收在＿點，週漲跌＿%；主因是＿＿。
   - 「11/16 那篇台股文章刪掉，同步改總覽頁，push」
 - 不要貼長說明、不要叫它「先讀整個 repo」；完成後把該工作階段封存。
 
-## 12. 已知限制
+## 12. 研究捷徑（省 token，直接用）
+| 需要 | 來源（實測可用） |
+|---|---|
+| 台股新聞列表 | `curl https://www.cna.com.tw/list/afe.aspx` 抓 `/news/afe/YYYYMMDDxxxx.aspx`；內文在 `<div class="paragraph">` |
+| 指數收盤（加權、台灣 50） | `https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=YYYYMMDD&type=IND&response=json` |
+| 三大法人（單日） | `https://www.twse.com.tw/rwd/zh/fund/BFI82U?type=day&dayDate=YYYYMMDD&response=json`（週合計自行加總；type=week 會被擋，連續呼叫間隔 2 秒） |
+| 櫃買指數 | `https://www.tpex.org.tw/www/zh-tw/afterTrading/tradingIndex?date=YYYY/MM/DD&response=json` |
+| 加權指數成分股權重 | `https://www.taifex.com.tw/cht/9/futuresQADetail` |
+| 美股指數／個股／10 年債 | `https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=1mo`（^IXIC ^DJI ^SOX ^TNX、個股代號、2330.TW） |
+| 費半說明 | `https://indexes.nasdaqomx.com/Index/Overview/SOX` |
+| Fed | `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm` |
+| 美股休市 | `https://www.nyse.com/markets/hours-calendars` |
+| 金管會、央行、主計總處新聞稿 | `fsc.gov.tw/ch/home.jsp?id=96&parentpath=0,2`、`cbc.gov.tw/tw/lp-302-1.html`、`dgbas.gov.tw/News.aspx?n=3602&sms=10980` |
+| 勞動部新聞稿 | `https://www.mol.gov.tw/1607/1632/1633/`（`/數字/post`） |
+| ILO | `https://www.ilo.org/resource/news/all-news-recent` |
+| AI 官方 | `https://blog.google/rss/`、`https://www.anthropic.com/news`、`https://nvidianews.nvidia.com/`、`https://www.bis.gov/news-updates` |
+| 學術 | PubMed E-utilities（見第 4 節）；esearch：`.../esearch.fcgi?db=pubmed&term=關鍵字&retmax=5&sort=relevance` |
+- 讀不到（擋自動讀取）：Reuters、AP、OpenAI、The Verge、CNBC、S&P DJI、SEC.gov、CDC、MIT Sloan。Wikipedia API 會限流，只當參考資料。
+- 數字核對：中央社週漲跌有時從週一起算，週報一律用「前一週五 → 本週五」收盤計算。
+
+## 13. 交接與移轉（全部在雲端，不必打包）
+| 東西 | 位置 | 移轉時要做 |
+|---|---|---|
+| 網站內容、手冊、程式 | GitHub `laura920069/daily-knowledge`（main） | 不用動；要備份可在 GitHub 按 Code → Download ZIP |
+| 網站 | GitHub Pages（push 自動部署） | 不用動 |
+| 每日排程 | Claude 排程「每日知識庫更新」`trig_01VvCG8ffMKL2CfTtXkkzgGn`，每天 07:31 台北，送進專用工作階段 `session_012xFyYGELKDmzfp8DuHavUp` | 不用動；**這個工作階段不可封存或刪除** |
+| 雲端環境 | Default 環境，網路「不限制」 | 不用動 |
+| LINE 推播 | Google Apps Script（Laura 的試算表）讀 `site-extra/line/latest.json` | 不用動 |
+| 後台 | `/admin/`，GitHub token 由 Laura 保管 | 不用動 |
+- 新開對話維護時，**不必上傳任何檔案**：選本 repo 開新工作階段，它會自動讀本檔。只需一句話說要改什麼（見第 11 節）。
+- 如果專用工作階段意外失效：在 claude.ai/code 新開一個選了本 repo 的工作階段，請 Claude「把排程 `trig_01VvCG8ffMKL2CfTtXkkzgGn` 改送到這個工作階段」，並把第 2、13 節的工作階段 ID 更新。
+- 未使用任何特殊 skills；研究用 WebSearch＋curl，發佈用 git push。
+
+## 14. 已知限制
 - 用工具建立的排程任務無法直接綁 repository，所以排程改送進「已接上 repo 的專用工作階段」執行；該工作階段被封存或刪除，排程就會失效。
 - Apps Script 原始碼只在 Laura 的 Google 試算表；若需修改，請她貼出（遮住 token）或提供新版讓她覆蓋。
 - 首頁桌機版隱藏側欄（搜尋在內頁）；預設淺色主題。
